@@ -105,7 +105,8 @@ qa_agent = Agent(
     name="qa_testing_agent",
     description="Runs unit, component, and Playwright E2E tests for target application",
     model=model_name,
-    instruction="Execute unit and E2E tests for the target web application. Store test results in session state.",
+    instruction="""Execute unit and E2E tests for the target web application using run_jest_tests and run_playwright_e2e.
+Once tests finish, summarize the test pass/fail results in plain text and finish your turn. Do NOT generate duplicate tool calls or repeat transfer_to_agent.""",
     state_schema=WebAgentState,
     tools=[run_jest_tests, run_playwright_e2e]
 )
@@ -115,7 +116,8 @@ deploy_agent = Agent(
     name="prod_deploy_agent",
     description="Audits GitHub Secrets, DNS, Supabase DB, GitHub & Vercel via MCP, and triggers CD deployment workflow",
     model=model_name,
-    instruction="Verify that QA tests passed in state, audit secrets & DNS, audit Supabase/Vercel/GitHub via MCP tools, and trigger deployment if ready.",
+    instruction="""Verify that QA tests passed in state, audit secrets & DNS, and trigger deployment if ready.
+After executing audits, summarize findings in text and finish your turn. Do NOT repeat tool calls or transfer_to_agent.""",
     state_schema=WebAgentState,
     tools=[audit_github_secrets, audit_hostinger_dns, trigger_github_deploy] + mcp_tools
 )
@@ -126,7 +128,7 @@ verifier_agent = Agent(
     description="Probes production URL health and verifies live deployment",
     model=model_name,
     instruction="""Probe live production URL health using probe_production_health.
-Once you receive the probe status (whether HTTP 200 OK or HTTP error/failed), summarize the health probe result clearly and finish your turn immediately to return control back to the supervisor.""",
+Once you receive the probe status (whether HTTP 200 OK or HTTP error/failed), summarize the health probe result in text and finish your turn immediately. Do NOT repeat tool calls or transfer_to_agent.""",
     state_schema=WebAgentState,
     tools=[probe_production_health]
 )
@@ -142,7 +144,7 @@ Manage execution across sub-agents while maintaining execution state:
 2. If QA tests pass, invoke prod_deploy_agent to audit secrets & DNS, then trigger deployment.
 3. Invoke post_deploy_verifier to confirm live production health.
 4. Call save_memory_log to persist execution results and state to ADK_MEMORY.md.
-Store state and summarize full memory of execution.""",
+Summarize full memory of execution in clear text.""",
     state_schema=WebAgentState,
     sub_agents=[qa_agent, deploy_agent, verifier_agent],
     tools=[save_memory_log]
