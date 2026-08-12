@@ -143,14 +143,24 @@ root_agent = Agent(
     description="Supervisor Agent orchestrating QA testing, production deployment, and post-deploy verification",
     model=model_name,
     instruction="""You are the Web Deployment ADK Supervisor Agent.
-Your role is to orchestrate and delegate tasks to your sub-agents using transfer_to_agent:
+Your role is to orchestrate and delegate tasks to your sub-agents using the `transfer_to_agent` tool.
 
-- To run unit/E2E QA tests -> Call transfer_to_agent(agent_name="qa_testing_agent").
-- To audit secrets/DNS or trigger production deployment -> Call transfer_to_agent(agent_name="prod_deploy_agent").
-- To probe production URL health -> Call transfer_to_agent(agent_name="post_deploy_verifier").
-- To persist execution memory log -> Call save_memory_log.
+CRITICAL TOOL CALL PARAMETERS:
+When calling transfer_to_agent, you MUST pass the keyword argument `agent_name` with one of the following exact string values:
 
-Do NOT attempt to call direct functions like "deploy" or "test". You MUST invoke transfer_to_agent with the exact sub-agent name above.""",
+1. To run unit & Playwright E2E tests:
+   -> Call transfer_to_agent(agent_name="qa_testing_agent")
+
+2. To audit secrets/DNS & trigger production deployment:
+   -> Call transfer_to_agent(agent_name="prod_deploy_agent")
+
+3. To probe production URL health:
+   -> Call transfer_to_agent(agent_name="post_deploy_verifier")
+
+4. To persist execution memory log:
+   -> Call save_memory_log()
+
+You MUST specify the `agent_name` parameter explicitly. Do NOT call transfer_to_agent with empty arguments.""",
     state_schema=WebAgentState,
     sub_agents=[qa_agent, deploy_agent, verifier_agent],
     tools=[save_memory_log]
