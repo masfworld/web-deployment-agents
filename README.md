@@ -8,6 +8,8 @@ Supports **Google Gemini (Cloud)** as well as **Local Ollama Models** (e.g. `qwe
 
 ## 🏛️ System Architecture & Included Agents
 
+![Google ADK Visual Agent Graph](docs/images/adk_agent_graph.png)
+
 ```
                                ┌─────────────────────────────────────────┐
                                │    Web Deployment ADK Supervisor        │
@@ -81,6 +83,8 @@ Launches Google ADK's built-in web interface with visual agent graphs and execut
 adk web adk_agent
 ```
 Open **`http://localhost:8000`** in your browser.
+
+![Google ADK Visual Agent Graph](docs/images/adk_agent_graph.png)
 
 ---
 
