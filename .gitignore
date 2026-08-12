@@ -1,0 +1,14 @@
+# Environment variables
+.env
+.env.*
+
+# Dependencies & Build
+node_modules/
+dist/
+.adk/
+__pycache__/
+*.pyc
+
+# Logs & OS artifacts
+*.log
+.DS_Store

@@ -1,0 +1,38 @@
+{
+  "name": "web-deployment-agents",
+  "version": "1.0.0",
+  "description": "Google ADK multi-agent framework for testing, pre-flight auditing, deploying, and verifying web applications",
+  "main": "dist/cli.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "agent": "tsx src/cli.ts",
+    "agent:qa": "tsx src/cli.ts --agent=qa",
+    "agent:deploy": "tsx src/cli.ts --agent=deploy",
+    "agent:verify": "tsx src/cli.ts --agent=verify",
+    "agent:orchestrate": "tsx src/cli.ts --agent=orchestrate"
+  },
+  "keywords": [
+    "google-adk",
+    "gemini",
+    "ollama",
+    "mcp",
+    "agents",
+    "e2e-testing",
+    "deployment",
+    "verification"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/genai": "^2.16.0",
+    "dotenv": "^16.4.7",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3"
+  }
+}
