@@ -1,6 +1,5 @@
 # Environment variables
 .env
-.env.*
 
 # Dependencies & Build
 node_modules/
@@ -12,3 +11,5 @@ __pycache__/
 # Logs & OS artifacts
 *.log
 .DS_Store
+
+ADK_MEMORY.md
