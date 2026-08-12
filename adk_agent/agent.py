@@ -26,6 +26,9 @@ from adk_agent.tools import (
     audit_hostinger_dns,
     trigger_github_deploy,
     probe_production_health,
+    run_qa_testing_phase,
+    run_production_deployment_phase,
+    run_post_deployment_verification_phase,
     save_memory_log
 )
 
@@ -143,25 +146,21 @@ root_agent = Agent(
     description="Supervisor Agent orchestrating QA testing, production deployment, and post-deploy verification",
     model=model_name,
     instruction="""You are the Web Deployment ADK Supervisor Agent.
-Your role is to orchestrate and delegate tasks to your sub-agents using the `transfer_to_agent` tool.
+Orchestrate multi-phase deployment using your phase tools or sub-agents:
 
-CRITICAL TOOL CALL PARAMETERS:
-When calling transfer_to_agent, you MUST pass the keyword argument `agent_name` with one of the following exact string values:
+Phase Execution Tools:
+1. To run unit & E2E tests -> Call run_qa_testing_phase() or transfer_to_agent(agent_name="qa_testing_agent").
+2. To audit secrets, DNS & deploy to production -> Call run_production_deployment_phase() or transfer_to_agent(agent_name="prod_deploy_agent").
+3. To probe live production health -> Call run_post_deployment_verification_phase() or transfer_to_agent(agent_name="post_deploy_verifier").
+4. To persist execution memory log -> Call save_memory_log().
 
-1. To run unit & Playwright E2E tests:
-   -> Call transfer_to_agent(agent_name="qa_testing_agent")
-
-2. To audit secrets/DNS & trigger production deployment:
-   -> Call transfer_to_agent(agent_name="prod_deploy_agent")
-
-3. To probe production URL health:
-   -> Call transfer_to_agent(agent_name="post_deploy_verifier")
-
-4. To persist execution memory log:
-   -> Call save_memory_log()
-
-You MUST specify the `agent_name` parameter explicitly. Do NOT call transfer_to_agent with empty arguments.""",
+ALWAYS invoke the appropriate tool or sub-agent immediately when requested!""",
     state_schema=WebAgentState,
     sub_agents=[qa_agent, deploy_agent, verifier_agent],
-    tools=[save_memory_log]
+    tools=[
+        run_qa_testing_phase,
+        run_production_deployment_phase,
+        run_post_deployment_verification_phase,
+        save_memory_log
+    ]
 )

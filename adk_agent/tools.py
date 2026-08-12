@@ -3,6 +3,7 @@ import socket
 import os
 import json
 import urllib.request
+import urllib.error
 
 TARGET_APP_DIR = os.environ.get("TARGET_APP_DIR", "./")
 PROD_APP_URL = os.environ.get("PROD_APP_URL", "https://example.com")
@@ -36,8 +37,6 @@ def trigger_github_deploy() -> str:
     res = subprocess.run(["gh", "workflow", "run", "deploy-production.yml"], cwd=TARGET_APP_DIR, capture_output=True, text=True)
     return res.stdout + "\n" + res.stderr if res.returncode == 0 else f"Failed: {res.stderr}"
 
-import urllib.error
-
 def probe_production_health() -> str:
     """Probes the live production application URL."""
     try:
@@ -49,7 +48,26 @@ def probe_production_health() -> str:
     except Exception as e:
         return f"Health Probe Failed ({PROD_APP_URL}): {str(e)}"
 
-def save_memory_log(qa_passed: bool, preflight_ok: bool, prod_healthy: bool, summary: str) -> str:
+# Direct Phase Tools for Reliable Supervisor Execution in Local LLMs (Ollama/Qwen)
+def run_qa_testing_phase() -> str:
+    """Phase 1: Executes unit tests and Playwright E2E tests for the application."""
+    jest_res = run_jest_tests()
+    e2e_res = run_playwright_e2e()
+    return f"=== JEST UNIT TEST RESULTS ===\n{jest_res}\n\n=== PLAYWRIGHT E2E TEST RESULTS ===\n{e2e_res}"
+
+def run_production_deployment_phase() -> str:
+    """Phase 2: Audits GitHub secrets, DNS records, and triggers production deployment."""
+    secrets_res = audit_github_secrets()
+    dns_res = audit_hostinger_dns()
+    deploy_res = trigger_github_deploy()
+    return f"=== GITHUB SECRETS AUDIT ===\n{secrets_res}\n\n=== HOSTINGER DNS AUDIT ===\n{dns_res}\n\n=== PRODUCTION DEPLOYMENT TRIGGER ===\n{deploy_res}"
+
+def run_post_deployment_verification_phase() -> str:
+    """Phase 3: Probes live production application URL health."""
+    health_res = probe_production_health()
+    return f"=== PRODUCTION HEALTH PROBE ===\n{health_res}"
+
+def save_memory_log(qa_passed: bool = True, preflight_ok: bool = True, prod_healthy: bool = True, summary: str = "Execution completed") -> str:
     """Appends persistent execution run history, state records, and audit summaries to ADK_MEMORY.md."""
     try:
         from datetime import datetime
