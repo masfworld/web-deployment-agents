@@ -36,12 +36,16 @@ def trigger_github_deploy() -> str:
     res = subprocess.run(["gh", "workflow", "run", "deploy-production.yml"], cwd=TARGET_APP_DIR, capture_output=True, text=True)
     return res.stdout + "\n" + res.stderr if res.returncode == 0 else f"Failed: {res.stderr}"
 
+import urllib.error
+
 def probe_production_health() -> str:
     """Probes the live production application URL."""
     try:
         req = urllib.request.Request(PROD_APP_URL, headers={'User-Agent': 'Web-Deployment-Agent'})
         with urllib.request.urlopen(req, timeout=10) as response:
             return f"HTTP {response.status} - OK ({PROD_APP_URL})"
+    except urllib.error.HTTPError as e:
+        return f"HTTP {e.code} ({e.reason}) for {PROD_APP_URL}. Probe complete."
     except Exception as e:
         return f"Health Probe Failed ({PROD_APP_URL}): {str(e)}"
 

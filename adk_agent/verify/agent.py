@@ -16,7 +16,8 @@ root_agent = Agent(
     name="post_deploy_verifier",
     description="Probes production URL health and verifies live deployment",
     model=model_name,
-    instruction="Probe live production URL health and update session state with verification results.",
+    instruction="""Probe live production URL health using probe_production_health.
+Once you receive the probe status (whether HTTP 200 OK or HTTP error/failed), summarize the health probe result clearly and finish your turn immediately to return control back to the supervisor.""",
     state_schema=WebAgentState,
     tools=[probe_production_health]
 )
