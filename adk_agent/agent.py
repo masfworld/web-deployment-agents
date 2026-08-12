@@ -154,7 +154,10 @@ Phase Execution Tools:
 3. To probe live production health -> Call run_post_deployment_verification_phase() or transfer_to_agent(agent_name="post_deploy_verifier").
 4. To persist execution memory log -> Call save_memory_log().
 
-ALWAYS invoke the appropriate tool or sub-agent immediately when requested!""",
+CRITICAL SINGLE-EXECUTION & TERMINATION RULE:
+Execute each required phase tool or save_memory_log AT MOST ONCE.
+Once a tool returns a result, summarize the output in plain text and IMMEDIATELY STOP your turn.
+NEVER call save_memory_log or any tool repeatedly in a loop!""",
     state_schema=WebAgentState,
     sub_agents=[qa_agent, deploy_agent, verifier_agent],
     tools=[
