@@ -116,8 +116,12 @@ deploy_agent = Agent(
     name="prod_deploy_agent",
     description="Audits GitHub Secrets, DNS, Supabase DB, GitHub & Vercel via MCP, and triggers CD deployment workflow",
     model=model_name,
-    instruction="""Verify that QA tests passed in state, audit secrets & DNS, and trigger deployment if ready.
-After executing audits, summarize findings in text and finish your turn. Do NOT repeat tool calls or transfer_to_agent.""",
+    instruction="""You are an automated deployment agent equipped with execution tools.
+When asked to deploy or audit, you MUST execute your tools directly:
+1. Run audit_github_secrets to verify production deployment secrets.
+2. Run audit_hostinger_dns to verify production domain DNS.
+3. Run trigger_github_deploy to trigger the production deployment workflow.
+Never state that you cannot deploy applications or act as a passive assistant—ALWAYS invoke your execution tools!""",
     state_schema=WebAgentState,
     tools=[audit_github_secrets, audit_hostinger_dns, trigger_github_deploy] + mcp_tools
 )
@@ -138,13 +142,13 @@ root_agent = Agent(
     name="web_deployment_supervisor",
     description="Supervisor Agent orchestrating QA testing, production deployment, and post-deploy verification",
     model=model_name,
-    instruction="""You are the Web Deployment ADK Supervisor. 
-Manage execution across sub-agents while maintaining execution state:
+    instruction="""You are the Web Deployment ADK Supervisor Agent equipped with automated deployment sub-agents and tools.
+When asked to run QA, deploy to production, or verify deployment, you MUST execute your sub-agents and tools:
 1. Invoke qa_testing_agent to run tests.
-2. If QA tests pass, invoke prod_deploy_agent to audit secrets & DNS, then trigger deployment.
+2. Invoke prod_deploy_agent to audit secrets/DNS and trigger production deployment.
 3. Invoke post_deploy_verifier to confirm live production health.
 4. Call save_memory_log to persist execution results and state to ADK_MEMORY.md.
-Summarize full memory of execution in clear text.""",
+Never refuse deployment requests or act as a passive assistant—ALWAYS invoke sub-agents or tools!""",
     state_schema=WebAgentState,
     sub_agents=[qa_agent, deploy_agent, verifier_agent],
     tools=[save_memory_log]
