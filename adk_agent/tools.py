@@ -4,20 +4,18 @@ import os
 import json
 import urllib.request
 import urllib.error
+import dotenv
 
-TARGET_APP_DIR = os.environ.get("TARGET_APP_DIR", "./")
-PROD_APP_URL = os.environ.get("PROD_APP_URL", "https://example.com")
-PROD_DOMAIN = os.environ.get("PROD_DOMAIN", "example.com")
+dotenv.load_dotenv()
 
-def run_jest_tests() -> str:
-    """Runs Jest unit and component test suites in target application."""
-    res = subprocess.run(["npm", "test"], cwd=TARGET_APP_DIR, capture_output=True, text=True)
-    return res.stdout + "\n" + res.stderr
+def get_target_app_dir():
+    return os.environ.get("TARGET_APP_DIR", os.environ.get("KOTRAIL_APP_DIR", "./"))
 
-def run_playwright_e2e() -> str:
-    """Runs Playwright E2E integration test suites in target application."""
-    res = subprocess.run(["npm", "run", "test:e2e"], cwd=TARGET_APP_DIR, capture_output=True, text=True)
-    return res.stdout + "\n" + res.stderr
+def get_prod_app_url():
+    return os.environ.get("PROD_APP_URL", "https://example.com")
+
+def get_prod_domain():
+    return os.environ.get("PROD_DOMAIN", os.environ.get("HOSTINGER_DOMAIN", "example.com"))
 
 def get_gh_env():
     env = os.environ.copy()
@@ -25,34 +23,46 @@ def get_gh_env():
     env.pop("GH_TOKEN", None)
     return env
 
+def run_jest_tests() -> str:
+    """Runs Jest unit and component test suites in target application."""
+    res = subprocess.run(["npm", "test"], cwd=get_target_app_dir(), capture_output=True, text=True)
+    return res.stdout + "\n" + res.stderr
+
+def run_playwright_e2e() -> str:
+    """Runs Playwright E2E integration test suites in target application."""
+    res = subprocess.run(["npm", "run", "test:e2e"], cwd=get_target_app_dir(), capture_output=True, text=True)
+    return res.stdout + "\n" + res.stderr
+
 def audit_github_secrets() -> str:
     """Audits GitHub Actions production deployment secrets using gh CLI."""
-    res = subprocess.run(["gh", "secret", "list"], cwd=TARGET_APP_DIR, capture_output=True, text=True, env=get_gh_env())
+    res = subprocess.run(["gh", "secret", "list"], cwd=get_target_app_dir(), capture_output=True, text=True, env=get_gh_env())
     return res.stdout if res.returncode == 0 else res.stderr
 
 def audit_hostinger_dns() -> str:
     """Audits DNS A records for the production domain."""
+    domain = get_prod_domain()
     try:
-        ip_list = socket.gethostbyname_ex(PROD_DOMAIN)[2]
-        return f"Domain {PROD_DOMAIN} resolves to IPs: {', '.join(ip_list)}"
+        ip_list = socket.gethostbyname_ex(domain)[2]
+        return f"Domain {domain} resolves to IPs: {', '.join(ip_list)}"
     except Exception as e:
-        return f"DNS Lookup Failed for {PROD_DOMAIN}: {str(e)}"
+        return f"DNS Lookup Failed for {domain}: {str(e)}"
 
 def trigger_github_deploy() -> str:
     """Triggers the deploy-production.yml GitHub Actions workflow."""
-    res = subprocess.run(["gh", "workflow", "run", "deploy-production.yml"], cwd=TARGET_APP_DIR, capture_output=True, text=True, env=get_gh_env())
+    res = subprocess.run(["gh", "workflow", "run", "deploy-production.yml"], cwd=get_target_app_dir(), capture_output=True, text=True, env=get_gh_env())
     return res.stdout + "\n" + res.stderr if res.returncode == 0 else f"Failed: {res.stderr}"
 
 def probe_production_health() -> str:
     """Probes the live production application URL."""
+    url = get_prod_app_url()
     try:
-        req = urllib.request.Request(PROD_APP_URL, headers={'User-Agent': 'Web-Deployment-Agent'})
+        req = urllib.request.Request(url, headers={'User-Agent': 'Web-Deployment-Agent'})
         with urllib.request.urlopen(req, timeout=10) as response:
-            return f"HTTP {response.status} - OK ({PROD_APP_URL})"
+            return f"HTTP {response.status} - OK ({url})"
     except urllib.error.HTTPError as e:
-        return f"HTTP {e.code} ({e.reason}) for {PROD_APP_URL}. Probe complete."
+        return f"HTTP {e.code} ({e.reason}) for {url}. Probe complete."
     except Exception as e:
-        return f"Health Probe Failed ({PROD_APP_URL}): {str(e)}"
+        return f"Health Probe Failed ({url}): {str(e)}"
 
 # Direct Phase Tools for Reliable Supervisor Execution in Local LLMs (Ollama/Qwen)
 def run_qa_testing_phase() -> str:
