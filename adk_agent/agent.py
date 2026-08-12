@@ -88,7 +88,7 @@ try:
             vercel_params = StdioConnectionParams(
                 server_params=StdioServerParameters(
                     command="npx",
-                    args=["-y", "@mcp-get/server-vercel"],
+                    args=["-y", "@open-mcp/vercel"],
                     env={"VERCEL_API_TOKEN": vercel_token}
                 )
             )
