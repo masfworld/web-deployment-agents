@@ -4,9 +4,9 @@ import os
 import json
 import urllib.request
 
-TARGET_APP_DIR = os.environ.get("TARGET_APP_DIR", os.environ.get("KOTRAIL_APP_DIR", "./"))
+TARGET_APP_DIR = os.environ.get("TARGET_APP_DIR", "./")
 PROD_APP_URL = os.environ.get("PROD_APP_URL", "https://example.com")
-PROD_DOMAIN = os.environ.get("PROD_DOMAIN", os.environ.get("HOSTINGER_DOMAIN", "example.com"))
+PROD_DOMAIN = os.environ.get("PROD_DOMAIN", "example.com")
 
 def run_jest_tests() -> str:
     """Runs Jest unit and component test suites in target application."""

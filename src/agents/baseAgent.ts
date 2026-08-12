@@ -10,8 +10,6 @@ export interface WebAgentState {
   timestamp: string;
 }
 
-export type KotrailAgentState = WebAgentState; // Backward compatibility alias
-
 export interface AgentResult {
   agentName: string;
   success: boolean;

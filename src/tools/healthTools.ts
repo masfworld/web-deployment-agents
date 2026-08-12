@@ -11,7 +11,7 @@ export interface HealthProbeResult {
 export async function probeHttpEndpoint(url: string = CONFIG.prodAppUrl): Promise<HealthProbeResult> {
   const startTime = Date.now();
   try {
-    const response = await fetch(url, { method: 'GET', headers: { 'User-Agent': 'Kotrail-Verifier-Agent' } });
+    const response = await fetch(url, { method: 'GET', headers: { 'User-Agent': 'Web-Deployment-Verifier' } });
     const responseTimeMs = Date.now() - startTime;
     return {
       url,

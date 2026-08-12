@@ -19,8 +19,6 @@ class WebAgentState(BaseModel):
     prod_healthy: bool = Field(default=False, description="Whether Phase 3 post-deploy health check passed")
     last_audit_summary: str = Field(default="", description="Summary of last preflight audit")
 
-KotrailAgentState = WebAgentState  # Backward compatibility alias
-
 from adk_agent.tools import (
     run_jest_tests,
     run_playwright_e2e,
