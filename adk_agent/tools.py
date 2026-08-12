@@ -19,9 +19,15 @@ def run_playwright_e2e() -> str:
     res = subprocess.run(["npm", "run", "test:e2e"], cwd=TARGET_APP_DIR, capture_output=True, text=True)
     return res.stdout + "\n" + res.stderr
 
+def get_gh_env():
+    env = os.environ.copy()
+    env.pop("GITHUB_TOKEN", None)
+    env.pop("GH_TOKEN", None)
+    return env
+
 def audit_github_secrets() -> str:
     """Audits GitHub Actions production deployment secrets using gh CLI."""
-    res = subprocess.run(["gh", "secret", "list"], cwd=TARGET_APP_DIR, capture_output=True, text=True)
+    res = subprocess.run(["gh", "secret", "list"], cwd=TARGET_APP_DIR, capture_output=True, text=True, env=get_gh_env())
     return res.stdout if res.returncode == 0 else res.stderr
 
 def audit_hostinger_dns() -> str:
@@ -34,7 +40,7 @@ def audit_hostinger_dns() -> str:
 
 def trigger_github_deploy() -> str:
     """Triggers the deploy-production.yml GitHub Actions workflow."""
-    res = subprocess.run(["gh", "workflow", "run", "deploy-production.yml"], cwd=TARGET_APP_DIR, capture_output=True, text=True)
+    res = subprocess.run(["gh", "workflow", "run", "deploy-production.yml"], cwd=TARGET_APP_DIR, capture_output=True, text=True, env=get_gh_env())
     return res.stdout + "\n" + res.stderr if res.returncode == 0 else f"Failed: {res.stderr}"
 
 def probe_production_health() -> str:
