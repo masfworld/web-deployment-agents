@@ -29,8 +29,8 @@ def run_jest_tests() -> str:
     return res.stdout + "\n" + res.stderr
 
 def run_playwright_e2e() -> str:
-    """Runs Playwright E2E integration test suites in target application."""
-    res = subprocess.run(["npm", "run", "test:e2e"], cwd=get_target_app_dir(), capture_output=True, text=True)
+    """Runs Playwright E2E integration test suites in target application with seeded database."""
+    res = subprocess.run(["npm", "run", "test:e2e:local"], cwd=get_target_app_dir(), capture_output=True, text=True)
     return res.stdout + "\n" + res.stderr
 
 def audit_github_secrets() -> str:
