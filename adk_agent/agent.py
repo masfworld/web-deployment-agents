@@ -108,8 +108,11 @@ qa_agent = Agent(
     name="qa_testing_agent",
     description="Runs unit, component, and Playwright E2E tests for target application",
     model=model_name,
-    instruction="""Execute unit and E2E tests for the target web application using run_jest_tests and run_playwright_e2e.
-Once tests finish, summarize the test pass/fail results in plain text and finish your turn. Do NOT generate duplicate tool calls or repeat transfer_to_agent.""",
+    instruction="""You are an automated QA testing agent equipped with execution tools.
+When asked to run QA or tests, you MUST execute your tools directly:
+1. Run run_jest_tests to execute unit and component tests.
+2. Run run_playwright_e2e to execute Playwright integration tests.
+Never state that you cannot run tests or act as a passive assistant—ALWAYS invoke your execution tools directly!""",
     state_schema=WebAgentState,
     tools=[run_jest_tests, run_playwright_e2e]
 )
@@ -145,7 +148,7 @@ root_agent = Agent(
     name="web_deployment_supervisor",
     description="Supervisor Agent orchestrating QA testing, production deployment, and post-deploy verification",
     model=model_name,
-    instruction="""You are the Web Deployment ADK Supervisor Agent.
+    instruction="""You are the Web Deployment ADK Supervisor Agent equipped with automated testing tools.
 Orchestrate multi-phase deployment using your phase tools or sub-agents:
 
 Phase Execution Tools:
@@ -154,10 +157,11 @@ Phase Execution Tools:
 3. To probe live production health -> Call run_post_deployment_verification_phase() or transfer_to_agent(agent_name="post_deploy_verifier").
 4. To persist execution memory log -> Call save_memory_log().
 
-CRITICAL SINGLE-EXECUTION & TERMINATION RULE:
+CRITICAL EXECUTION & SINGLE-TURN RULE:
+When asked to run QA tests or deploy, you MUST invoke your execution tools immediately!
+Never reply as a passive assistant claiming you cannot run tests or deploy.
 Execute each required phase tool or save_memory_log AT MOST ONCE.
-Once a tool returns a result, summarize the output in plain text and IMMEDIATELY STOP your turn.
-NEVER call save_memory_log or any tool repeatedly in a loop!""",
+Once a tool returns a result, summarize the output in plain text and IMMEDIATELY STOP your turn.""",
     state_schema=WebAgentState,
     sub_agents=[qa_agent, deploy_agent, verifier_agent],
     tools=[
